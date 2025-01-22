@@ -1,0 +1,20 @@
+#pragma once
+
+using MessageType = unsigned int;
+
+struct TwoFloats {
+    float m_x, m_y;
+};
+
+struct Message {
+    Message(const MessageType& l_type) : m_type(l_type) {};
+    MessageType m_type;
+    int m_sender;
+    int m_receiver;
+
+    union {
+        TwoFloats m_2f;
+        int m_int;
+        bool m_bool;
+    };
+};
