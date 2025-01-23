@@ -7,11 +7,11 @@ using Subscriptions = std::unordered_map<EntityMessage, Communicator>;
 
 class MessageHandler {
 public:
-    bool Subcribe(const EntityMessage& l_type, Observer* l_observer) {
+    bool Subscribe(const EntityMessage& l_type, Observer* l_observer) {
         return m_communicators[l_type].AddObserver(l_observer);
     };
 
-    bool Unsubcribe(const EntityMessage& l_type, Observer* l_observer) {
+    bool Unsubscribe(const EntityMessage& l_type, Observer* l_observer) {
         return m_communicators[l_type].AddObserver(l_observer);
     };
 
