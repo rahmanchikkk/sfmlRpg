@@ -6,6 +6,7 @@ using Frame = unsigned int;
 class SpriteSheet;
 
 class AnimBase {
+    friend class SpriteSheet;
 public:
     AnimBase();
     ~AnimBase();
