@@ -21,6 +21,9 @@ ADD_LIBRARY(SharedDir STATIC
 ADD_LIBRARY(ClientLib STATIC 
     src/client/Client.h
     src/client/Client.cpp
+    src/client/EventManager.h
+    src/client/EventManager.cpp
+    src/client/GUI_Event.h
 )
 ADD_LIBRARY(ServerLib STATIC 
     src/server/Server.h
