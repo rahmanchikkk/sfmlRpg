@@ -48,7 +48,6 @@ public:
     bool IsActive() const;
     void SetActive(const bool& l_active);
     bool IsControl() const;
-    void SetControl(const bool& l_control);
     bool IsInside(const sf::Vector2f& l_point) const;
     sf::Vector2f GetGlobalPosition() const;
 
@@ -69,7 +68,7 @@ protected:
 
     std::string m_name;
     sf::Vector2f m_position;
-    ElementStyles m_elemStyles;
+    ElementStyles m_style;
     GUI_Visual m_visual;
     GUI_ElementType m_type;
     GUI_ElementState m_state;
