@@ -24,6 +24,9 @@ ADD_LIBRARY(ClientLib STATIC
     src/client/EventManager.h
     src/client/EventManager.cpp
     src/client/GUI_Event.h
+    src/client/GUI_Element.h
+    src/client/GUI_Element.cpp
+    src/client/GUI_Style.h
 )
 ADD_LIBRARY(ServerLib STATIC 
     src/server/Server.h
