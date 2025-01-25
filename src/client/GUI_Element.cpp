@@ -108,7 +108,7 @@ sf::Vector2f GUI_Element::GetGlobalPosition() const {
 }
 
 void GUI_Element::ApplyBgStyle() {
-    TextureManager* textureManager = m_owner->GetContext()->m_textureManager;
+    TextureManager* textureManager = m_owner->GetManager()->GetContext()->m_textureManager;
     const auto& currentStyle = m_style[m_state];
     if (currentStyle.m_backgroundImage != "") {
         m_visual.m_backgroundImage.setTexture(*textureManager->GetResource(currentStyle.m_backgroundImage));
@@ -121,7 +121,7 @@ void GUI_Element::ApplyBgStyle() {
 }
 
 void GUI_Element::ApplyTextStyle() {
-    FontManager* fontManager = m_owner->GetContext()->m_fontManager;
+    FontManager* fontManager = m_owner->GetManager()->GetContext()->m_fontManager;
     const auto& currentStyle = m_style[m_state];
     if (currentStyle.m_textFont != "") {
         m_visual.m_text.setFont(*fontManager->GetResource(currentStyle.m_textFont));
@@ -138,7 +138,7 @@ void GUI_Element::ApplyTextStyle() {
 }
 
 void GUI_Element::ApplyGlyphStyle() {
-    TextureManager* textureManager = m_owner->GetContext()->m_textureManager;
+    TextureManager* textureManager = m_owner->GetManager()->GetContext()->m_textureManager;
     const auto& currentStyle = m_style[m_state];
     if (currentStyle.m_glyph != "") {
         m_visual.m_glyph.setTexture(*textureManager->GetResource(currentStyle.m_glyph));
@@ -148,20 +148,20 @@ void GUI_Element::ApplyGlyphStyle() {
 
 void GUI_Element::RequireTexture(const std::string& l_name) {
     if (l_name == "") return;
-    m_owner->GetContext()->m_textureManager->RequireResource(l_name);
+    m_owner->GetManager()->GetContext()->m_textureManager->RequireResource(l_name);
 }
 
 void GUI_Element::ReleaseTexture(const std::string& l_name) {
     if (l_name == "") return;
-    m_owner->GetContext()->m_textureManager->ReleaseResource(l_name);
+    m_owner->GetManager()->GetContext()->m_textureManager->ReleaseResource(l_name);
 }
 
 void GUI_Element::RequireFont(const std::string& l_name) {
     if (l_name == "") return;
-    m_owner->GetContext()->m_fontManager->RequireResource(l_name);
+    m_owner->GetManager()->GetContext()->m_fontManager->RequireResource(l_name);
 }
 
 void GUI_Element::ReleaseFont(const std::string& l_name) {
     if (l_name == "") return;
-    m_owner->GetContext()->m_fontManager->ReleaseResource(l_name);
+    m_owner->GetManager()->GetContext()->m_fontManager->ReleaseResource(l_name);
 }
