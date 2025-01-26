@@ -2,15 +2,13 @@
 #include "StateManager.h"
 #include <cmath>
 
-Map::Map(SharedContext* l_context) : m_context(l_context), m_playerId(-1), m_defaultTile(l_context), m_maxMapSize(32, 32) {
-    m_context->m_gameMap = this;
+Map::Map(ServerEntityManager* l_entityMgr) : m_entityManager(l_entityMgr), m_maxMapSize(32, 32) {
     LoadTiles("tiles.cfg");
 }
 
 Map::~Map() {
     PurgeMap();
     PurgeTileSet();
-    m_context->m_gameMap = nullptr;
 }
 
 Tile* Map::GetTile(unsigned int l_x, unsigned int l_y, unsigned int l_layer) {
@@ -27,7 +25,6 @@ TileInfo* Map::GetDefaultTile() {
 }
 
 unsigned int Map::GetTileCount() const { return m_tileCount; }
-int Map::GetPlayerId() const { return m_playerId; }
 const sf::Vector2u& Map::GetMapSize() const { return m_maxMapSize; }
 const sf::Vector2f& Map::GetPlayerStart() const { return m_playerStart; }
 
@@ -83,11 +80,9 @@ void Map::LoadMap(const std::string& l_mapFile) {
         } else if (type == "ENTITY") {
             std::string name;
             keystream >> name;
-            if (name == "Player" && m_playerId != -1) continue;
-            int entityId = m_context->m_entityManager->AddEntity(name);
+            int entityId = m_entityManager->AddEntity(name);
             if (entityId == -1) continue;
-            if (name == "Player") m_playerId = entityId;
-            C_Base* pos = m_context->m_entityManager->GetComponent<C_Position>(entityId, Component::Position);
+            C_Base* pos = m_entityManager->GetComponent<C_Position>(entityId, Component::Position);
             if (pos) keystream >> *pos;
         } else {
             std::cout << "Unknown type: " << type << std::endl;
@@ -110,7 +105,7 @@ void Map::LoadTiles(const std::string& l_tilesFile) {
         TileID tId;
         keystream >> tId;
         if (tId < 0) continue;
-        TileInfo* info = new TileInfo(m_context, "TileSheet", tId);
+        TileInfo* info = new TileInfo(tId);
         keystream >> info->m_name >> info->m_friction.x >> info->m_friction.y >> info->m_deadly;
         if (!m_tileSet.emplace(tId, info).second) {
             std::cout << "Duplicate tile: " << tId << std::endl;
@@ -123,44 +118,13 @@ void Map::LoadTiles(const std::string& l_tilesFile) {
 
 void Map::Update(float l_dT) {}
 
-void Map::Draw(unsigned int l_layer) {
-    if (l_layer >= Sheet::Num_Layers) return;
-    sf::RenderWindow* wind = m_context->m_window->GetRenderWindow();
-    sf::FloatRect viewSpace = m_context->m_window->GetViewSpace();
-    sf::Vector2f tileBegin(std::floor(viewSpace.left / Sheet::Tile_Size), std::floor(viewSpace.top / Sheet::Tile_Size));
-    sf::Vector2f tileEnd(std::ceil((viewSpace.left + viewSpace.width) / Sheet::Tile_Size), std::ceil((viewSpace.top + viewSpace.height) / Sheet::Tile_Size));
-    int count = 0;
-    for (int x = tileBegin.x; x <= tileEnd.x; ++x) {
-        for (int y = tileBegin.y; y <= tileEnd.y; ++y) {
-            Tile* tile = GetTile(x, y, l_layer);
-            if (!tile) continue;
-            sf::Sprite& sprite = tile->m_properties->m_sprite;
-            sprite.setPosition(x * Sheet::Tile_Size, y * Sheet::Tile_Size);
-            wind->draw(sprite);
-            ++count;
-            if (!m_context->m_debugOverlay->Debug()) continue;
-            if (!tile->m_properties->m_deadly && !tile->m_solid && !tile->m_warp) continue;
-            sf::RectangleShape* tileMarker = new sf::RectangleShape(sf::Vector2f(Sheet::Tile_Size, Sheet::Tile_Size));
-            tileMarker->setPosition(x * Sheet::Tile_Size, y * Sheet::Tile_Size);
-            if (tile->m_properties->m_deadly) {
-                tileMarker->setFillColor(sf::Color(255, 0, 0, 100));
-            } else if (tile->m_solid) {
-                tileMarker->setFillColor(sf::Color(0, 255, 0, 150));
-            } else if (tile->m_warp) {
-                tileMarker->setFillColor(sf::Color(0, 0, 255, 150));
-            }
-            m_context->m_debugOverlay->Add(tileMarker);
-        }
-    }
-}
-
 void Map::PurgeMap() {
     while (m_tileMap.begin() != m_tileMap.end()) {
         delete m_tileMap.begin()->second;
         m_tileMap.erase(m_tileMap.begin());
     }
     m_tileCount = 0;
-    m_context->m_entityManager->Purge();
+    m_entityManager->Purge();
 }
 
 void Map::PurgeTileSet() {

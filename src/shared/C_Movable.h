@@ -19,7 +19,7 @@ public:
     Direction GetDirection() { return m_direction; };
 
     void SetVelocity(const sf::Vector2f& l_vec) { m_velocity = l_vec; };
-    void SetAccelerstion(const sf::Vector2f& l_vec) { m_acceleration = l_vec; };
+    void SetAcceleration(const sf::Vector2f& l_vec) { m_acceleration = l_vec; };
     void SetSpeed(const sf::Vector2f& l_vec) { m_speed = l_vec; };
     void SetMaxVelocity(float l_max) { m_velocityMax = l_max; };
     void SetDirection(const Direction& l_dir) { m_direction = l_dir; };
