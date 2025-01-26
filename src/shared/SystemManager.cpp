@@ -15,10 +15,10 @@ void SystemManager::SetEntityManager(EntityManager* l_entityMgr) {
     }
 }
 
-void SystemManager::AddEvent(const EntityId& l_entity, const EntityEvent& l_event) {
+void SystemManager::AddEvent(const EntityId& l_entity, const EventID& l_event) {
     auto itr = m_events.find(l_entity);
     if (itr == m_events.end()) return;
-    itr->second.AddEvent((EventID)l_event);
+    itr->second.AddEvent(l_event);
 }
 
 void SystemManager::Update(float l_dT) {

@@ -33,7 +33,7 @@ public:
         return (itr == m_systems.end() ? nullptr : dynamic_cast<T*>(itr->second));
     };
 
-    void AddEvent(const EntityId& l_entity, const EntityEvent& l_event);
+    void AddEvent(const EntityId& l_entity, const EventID& l_event);
     void Update(float l_dT);
     void HandleEvents();
 
