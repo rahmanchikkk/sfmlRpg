@@ -53,15 +53,12 @@ void S_Network::HandleEvent(const EntityId& l_entity, const EntityEvent& l_event
 void S_Network::Notify(const Message& l_msg) {
     if (!HasEntity(l_msg.m_receiver) || l_msg.m_receiver != m_playerId) return;
     if (l_msg.m_int == (int)EntityMessage::Attack && m_messages.find(EntityMessage::Attack) == m_messages.end()) return;
-    m_messages[EntityMessage::Attack].push_back(l_msg);
+    m_messages[(EntityMessage)l_msg.m_type].push_back(l_msg);
 }
 
 void S_Network::SetClient(Client* l_client) { m_client = l_client; }
 void S_Network::SetPlayerId(const EntityId& l_entity) { m_playerId = l_entity; }
-void S_Network::ClearSnapshots() {
-    sf::Lock lock(m_client->GetMutex());
-    m_snapshots.clear();
-}
+void S_Network::ClearSnapshots() { m_snapshots.clear(); }
 
 void S_Network::AddSnapshot(const EntityId& l_entity, const sf::Int32& l_timestamp, const EntitySnapshot& l_snapshot) {
     sf::Lock lock(m_client->GetMutex());
@@ -69,6 +66,107 @@ void S_Network::AddSnapshot(const EntityId& l_entity, const sf::Int32& l_timesta
     itr.first->second.m_snapshots.emplace(l_entity, l_snapshot);
 }
 
-void S_Network::ApplyEntitySnapshot(const EntityId& l_entity, const EntitySnapshot& l_snapshot, bool l_physics) {
+void S_Network::ApplySnapshot(const EntityId& l_entity, const EntitySnapshot& l_snapshot, bool l_physics) {
+    if (!HasEntity(l_entity)) return;
+    ClientEntityManager* entityManager = (ClientEntityManager*)m_systemManager->GetEntityManager();
+    C_Position* pos = nullptr;
+    C_Movable* mov = nullptr;
+    S_Movement* movement = nullptr;
+    S_State* state = nullptr;
+    C_Health* health = nullptr;
+    C_Name* name = nullptr;
+    sf::Lock lock(m_client->GetMutex());
+    if (pos = entityManager->GetComponent<C_Position>(l_entity, Component::Position)) {
+        pos->SetPosition(l_snapshot.m_position);
+        pos->SetElevation(l_snapshot.m_elevation);
+    }
+    if (l_physics) {
+        if (mov = entityManager->GetComponent<C_Movable>(l_entity, Component::Movable)) {
+            mov->SetVelocity(l_snapshot.m_velocity);
+            mov->SetAcceleration(l_snapshot.m_acceleration);
+        }
+    }
+    if (state = m_systemManager->GetSystem<S_State>(System::State)) {
+        state->ChangeState(l_entity, (EntityState)l_snapshot.m_state, false);
+    }
+    if (health = entityManager->GetComponent<C_Health>(l_entity, Component::Health)) {
+        health->SetHealth(l_snapshot.m_health);
+    }
+    if (name = entityManager->GetComponent<C_Name>(l_entity, Component::Name)) {
+        name->SetName(l_snapshot.m_name);
+    }
+    if (movement = m_systemManager->GetSystem<S_Movement>(System::Movement)) {
+        movement->SetDirection(l_entity, (Direction)l_snapshot.m_direction);
+    }
+}
 
+void S_Network::SendPlayerOutgoing() {
+    sf::Int32 p_x, p_y;
+    sf::Int8 p_attacked;
+    for (auto& itr : m_messages) {
+        if (itr.first == EntityMessage::Move) {
+            int x = 0, y = 0;
+            for (auto& m : itr.second) {
+                if (m.m_int == (int)Direction::Up) --y;
+                else if (m.m_int == (int)Direction::Down) ++y;
+                else if (m.m_int == (int)Direction::Left) --x;
+                else if (m.m_int == (int)Direction::Right);
+            }
+            if (!x && !y) continue;
+            p_x = x; p_y = y;
+        } else if (itr.first == EntityMessage::Attack) {
+            p_attacked = true;
+        }
+    }
+    sf::Packet packet;
+    StampPacket(PacketType::PlayerUpdate, packet);
+    packet << sf::Int8(EntityMessage::Move) << p_x << p_y << sf::Int8(Network::PlayerUpdateDelim);
+    packet << sf::Int8(EntityMessage::Attack) << p_attacked << sf::Int8(Network::PlayerUpdateDelim);
+    m_client->Send(packet);
+    m_messages.clear();
+}
+
+void S_Network::PerformInterpolation() {
+    if (m_snapshots.empty()) return;
+    ClientEntityManager* entityManager = (ClientEntityManager*)m_systemManager->GetEntityManager();
+    sf::Time t = m_client->GetTime();
+    auto itr = ++m_snapshots.begin();
+    while (itr != m_snapshots.end()) {
+        if (m_snapshots.begin()->first <= t.asMilliseconds() - NET_RENDER_DELAY && 
+            itr->first >= t.asMilliseconds() - NET_RENDER_DELAY) {
+            auto snapshot1 = m_snapshots.begin();
+            auto snapshot2 = itr;
+            bool sortDrawables = false;
+            for (auto snap = snapshot1->second.m_snapshots.begin(); snap != snapshot1->second.m_snapshots.end();) {
+                if (!entityManager->HasEntity(snap->first)) {
+                    if (entityManager->AddEntity(snap->second.m_type, snap->first) == (EntityId)Network::NullID) {
+                        std::cout << "Failed to add entity from type: " << snap->second.m_type << std::endl;
+                        continue;
+                    }
+                    ApplySnapshot(snap->first, snap->second, true);
+                    ++snap;
+                    continue;
+                }
+                auto snap2 = itr->second.m_snapshots.find(snap->first);
+                if (snap2 == itr->second.m_snapshots.end()) {
+                    sf::Lock lock(m_client->GetMutex());
+                    entityManager->RemoveEntity(snap->first);
+                    snap = snapshot1->second.m_snapshots.erase(snap);
+                    continue;
+                }
+                EntitySnapshot iSnapshot;
+                InterpolateSnapshot(snap->second, snapshot1->first, snap2->second, snapshot2->first, 
+                    iSnapshot, t.asMilliseconds() - NET_RENDER_DELAY);
+                ApplySnapshot(snap->first, iSnapshot, true);
+                if (!CompareSnapshots(snap->second, snap2->second, true, false, false)) {
+                    sortDrawables = true;
+                }
+                ++snap;
+            }
+            if (sortDrawables) m_systemManager->GetSystem<S_Renderer>(System::Renderer)->SortDrawables();
+            return;
+        }
+        m_snapshots.erase(m_snapshots.begin());
+        itr = ++m_snapshots.begin();
+    }
 }
