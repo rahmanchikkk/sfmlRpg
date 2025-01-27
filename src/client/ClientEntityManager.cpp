@@ -40,7 +40,22 @@ int ClientEntityManager::AddEntity(const std::string& l_entityFile, int l_id = -
             Bitmask mask;
             keystream >> set;
             mask.SetMask(set);
-            
+            entityId = EntityManager::AddEntity(mask, l_id);
+            if (entityId == -1) return -1;
+        } else if (type == "Component") {
+            if (entityId == -1) continue;
+            unsigned int cid = 0;
+            keystream >> cid;
+            if (cid < 0) continue;
+            C_Base* component = GetComponent<C_Base>(entityId, (Component)cid);
+            if (!component) continue;
+            keystream >> *component;
+            if (component->GetType() == Component::SpriteSheet) {
+                C_SpriteSheet* sheet = (C_SpriteSheet*)component;
+                sheet->Create(m_textureManager);
+            }
         }
     }
+    file.close();
+    return entityId;
 }

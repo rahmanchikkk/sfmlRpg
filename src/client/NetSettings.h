@@ -1,0 +1,3 @@
+#pragma once
+#define NET_RENDER_DELAY 100
+#define PLAYER_UPDATE_INTERVAL 50

@@ -27,10 +27,14 @@ ADD_LIBRARY(ClientLib STATIC
     src/client/GUI_Element.h
     src/client/GUI_Element.cpp
     src/client/GUI_Style.h
+    src/client/S_Network.h
+    src/client/S_Network.cpp
 )
 ADD_LIBRARY(ServerLib STATIC 
     src/server/Server.h
     src/server/Server.cpp
+    src/server/S_Network.h
+    src/server/S_Network.cpp
 )
 ADD_EXECUTABLE(client src/clientExec/main.cpp)
 ADD_EXECUTABLE(server src/serverExec/main.cpp)
