@@ -1,7 +1,7 @@
 #include "SystemManager.h"
 #include "EntityManager.h"
 
-SystemManager::SystemManager(EntityManager* l_entityMgr) : m_entityManager(l_entityMgr) {}
+SystemManager::SystemManager() { m_entityManager = nullptr; }
 
 SystemManager::~SystemManager() { PurgeSystems(); }
 

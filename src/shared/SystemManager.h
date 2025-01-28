@@ -12,7 +12,7 @@ using EntityEventContainer = std::unordered_map<EntityId, EventQueue>;
 
 class SystemManager {
 public:
-    SystemManager(EntityManager* l_entityMgr);
+    SystemManager();
     virtual ~SystemManager();
 
     EntityManager* GetEntityManager();
