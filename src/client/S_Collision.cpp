@@ -14,6 +14,8 @@ S_Collision::S_Collision(SystemManager* l_sysMgr) : S_Base(System::Collision, l_
 
 S_Collision::~S_Collision() {}
 
+void S_Collision::SetMap(Map* l_gameMap) { m_gameMap = l_gameMap; }
+
 void S_Collision::Update(float l_dT) {
     EntityManager* entityManager = m_systemManager->GetEntityManager();
     for (auto& itr : m_entities) {

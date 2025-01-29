@@ -25,6 +25,7 @@ public:
     void Update(float l_dT);
     void HandleEvent(const EntityId& l_entity, const EntityEvent& l_event);
     void Notify(const Message& l_msg);
+    void SetMap(Map* l_gameMap);
 private:
     void EntityCollisions();
     void MapCollisions(const EntityId& l_entity, C_Position* l_position, C_Collidable* l_collidable);
