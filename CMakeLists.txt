@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(SFMLRPG LANGUAGES CXX)
+project(SFMLRPG LANGUAGES CXX C)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
@@ -12,6 +12,13 @@ FetchContent_Declare(SFML
     EXCLUDE_FROM_ALL
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
+
+FetchContent_Declare(libpq
+    GIT_REPOSITORY https://gitlab.com/sabelka/libpq-standalone
+    GIT_TAG REL_12_16
+    SOURCE_SUBDIR libpq)
+FetchContent_MakeAvailable(libpq)
+
 
 ADD_LIBRARY(SharedDir STATIC 
     src/sharedDir/PacketTypes.h
@@ -154,7 +161,9 @@ ADD_LIBRARY(ServerLib STATIC
     src/serverLib/World.h
     src/serverLib/World.cpp
 )
+
 ADD_EXECUTABLE(client src/client/Main.cpp)
+target_link_libraries(client PostgreSQL::PostgreSQL)
 ADD_EXECUTABLE(server src/server/Server_Main.cpp)
 target_link_libraries(SharedDir sfml-graphics)
 target_link_libraries(SharedDir sfml-audio)
