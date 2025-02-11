@@ -19,6 +19,7 @@ public:
 	void Play(EventDetails* l_details);
 	void Disconnect(EventDetails* l_details);
 	void Quit(EventDetails* l_details);
+	void Login(EventDetails* l_details);
 private:
 
 };

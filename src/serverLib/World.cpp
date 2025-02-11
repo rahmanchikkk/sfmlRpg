@@ -5,6 +5,19 @@ World::World(): m_server(&World::HandlePacket, this),
 	m_map(&m_entities), m_tick(0), m_tps(0), m_running(false)
 {
 	if (!m_server.Start()){ return; }
+	std::string str = "dbname=" + std::string(ignore::dbname) + " user=" + std::string(ignore::username) +  
+		" password=" + std::string(ignore::pwd) + " host=localhost port=5432";
+	const char* conninfo = str.c_str();
+	m_conn = PQconnectdb(conninfo);
+	if (PQstatus(m_conn) != CONNECTION_OK) {
+		std::cout << "Error while connecting to database server.\n";
+		PQfinish(m_conn);
+		exit(1);
+	}
+	std::cout << "Connection established.\n";
+	std::cout << "Port: " << PQport(m_conn) << "\n";
+	std::cout << "Host: " << PQhost(m_conn) << "\n";
+	std::cout << "DB Name: " << PQdb(m_conn) << "\n";
 	m_running = true;
 	m_systems.SetEntityManager(&m_entities);
 	m_entities.SetSystemManager(&m_systems);
@@ -51,6 +64,37 @@ void World::HandlePacket(sf::IpAddress& l_ip, const PortNumber& l_port,
 		if (type == PacketType::Disconnect){
 			ClientLeave(id);
 			l_server->RemoveClient(l_ip, l_port);
+		} else if (type == PacketType::Login) {
+			std::string str;
+			if (!(l_packet >> str)) return;
+			ClientID cid = l_server->AddClient(l_ip, l_port);
+			if (cid == -1) {
+				sf::Packet packet;
+				StampPacket(PacketType::Disconnect, packet);
+				l_server->Send(l_ip, l_port, packet);
+				return;
+			}
+			const char* query = str.c_str();
+			PGresult* result = PQexec(m_conn, query);
+			ExecStatusType status = PQresultStatus(result);
+			std::cout << "Login query status: " << status << "\n";
+			if (status != PGRES_TUPLES_OK) {
+				std::cout << "Error while executing query: " << PQerrorMessage(m_conn) << "\n";
+				PQclear(result);
+				return;
+			}
+			int cols = PQnfields(result);
+			ClientData data;
+			sf::Packet packet;
+			StampPacket(PacketType::Login, packet);
+			data.m_id = PQgetvalue(result, 0, 0);
+			data.m_nickname = PQgetvalue(result, 0, 1);
+			data.m_password = PQgetvalue(result, 0, 2);
+			data.m_email = PQgetvalue(result, 0, 3);
+			data.m_gold = std::stoi(PQgetvalue(result, 0, 4));
+			std::cout << PQgetvalue(result, 0, 5) << std::endl;
+			packet << data;
+			l_server->Send(cid, packet);
 		} else if (type == PacketType::Message){
 			// ...
 		} else if (type == PacketType::PlayerUpdate){

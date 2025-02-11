@@ -4,6 +4,9 @@
 #include "Server_System_Manager.h"
 #include "Map.h"
 #include "NetSettings.h"
+#include "ClientData.h"
+#include <libpq-fe.h>
+#include "ignore.h"
 
 class World{
 public:
@@ -26,7 +29,8 @@ private:
 	ServerSystemManager m_systems;
 	ServerEntityManager m_entities;
 	bool m_running;
-
+	
+	PGconn* m_conn;
 	Map m_map;
 	unsigned int m_tick;
 	unsigned int m_tps;

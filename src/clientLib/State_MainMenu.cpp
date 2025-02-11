@@ -17,6 +17,7 @@ void State_MainMenu::OnCreate(){
 	eMgr->AddCallback(StateType::MainMenu, "MainMenu_Play", &State_MainMenu::Play, this);
 	eMgr->AddCallback(StateType::MainMenu, "MainMenu_Disconnect", &State_MainMenu::Disconnect, this);
 	eMgr->AddCallback(StateType::MainMenu, "MainMenu_Quit", &State_MainMenu::Quit, this);
+	eMgr->AddCallback(StateType::MainMenu, "MainMenu_Login", &State_MainMenu::Login, this);
 }
 
 void State_MainMenu::OnDestroy(){
@@ -27,10 +28,12 @@ void State_MainMenu::OnDestroy(){
 	eMgr->RemoveCallback(StateType::MainMenu, "MainMenu_Play");
 	eMgr->RemoveCallback(StateType::MainMenu, "MainMenu_Disconnect");
 	eMgr->RemoveCallback(StateType::MainMenu, "MainMenu_Quit");
+	eMgr->RemoveCallback(StateType::MainMenu, "MainMenu_Login");
 }
 
 void State_MainMenu::Activate(){
 	GUI_Interface* menu = m_stateMgr->GetContext()->m_guiManager->GetInterface(StateType::MainMenu, "MainMenu");
+	menu->GetElement("Login")->SetActive(true);
 	if (m_stateMgr->HasState(StateType::Game)){
 		// Resume
 		menu->GetElement("Play")->SetText("Resume");
@@ -74,3 +77,7 @@ void State_MainMenu::Quit(EventDetails* l_details){ m_stateMgr->GetContext()->m_
 void State_MainMenu::Draw(){}
 void State_MainMenu::Update(const sf::Time& l_time){}
 void State_MainMenu::Deactivate(){}
+
+void State_MainMenu::Login(EventDetails* l_details) {
+	m_stateMgr->SwitchTo(StateType::Login);
+}

@@ -59,6 +59,10 @@ ADD_LIBRARY(SharedDir STATIC
     src/sharedDir/S_State.cpp
     src/sharedDir/EntitySnapshot.h
     src/sharedDir/EntitySnapshot.cpp
+    src/sharedDir/ClientData.h
+    src/sharedDir/ClientData.cpp
+    src/sharedDir/ignore.h
+    src/sharedDir/ignore.cpp
 )
 ADD_LIBRARY(ClientLib STATIC 
     src/clientLib/Client.h
@@ -134,6 +138,8 @@ ADD_LIBRARY(ClientLib STATIC
     src/clientLib/GUI_Textfield.cpp
     src/clientLib/Game.h
     src/clientLib/Game.cpp
+    src/clientLib/State_Login.h
+    src/clientLib/State_Login.cpp
 )
 ADD_LIBRARY(ServerLib STATIC 
     src/serverLib/Server.h
@@ -163,8 +169,8 @@ ADD_LIBRARY(ServerLib STATIC
 )
 
 ADD_EXECUTABLE(client src/client/Main.cpp)
-target_link_libraries(client PostgreSQL::PostgreSQL)
 ADD_EXECUTABLE(server src/server/Server_Main.cpp)
+target_link_libraries(ServerLib PostgreSQL::PostgreSQL)
 target_link_libraries(SharedDir sfml-graphics)
 target_link_libraries(SharedDir sfml-audio)
 target_link_libraries(SharedDir sfml-network)

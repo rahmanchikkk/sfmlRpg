@@ -4,6 +4,7 @@
 #include "State_Game.h"
 #include "State_Paused.h"
 #include "State_GameOver.h"
+#include "State_Login.h"
 
 StateManager::StateManager(SharedContext* l_shared)
 	: m_shared(l_shared)
@@ -13,6 +14,7 @@ StateManager::StateManager(SharedContext* l_shared)
 	RegisterState<State_Game>(StateType::Game);
 	RegisterState<State_Paused>(StateType::Paused);
 	RegisterState<State_GameOver>(StateType::GameOver);
+	RegisterState<State_Login>(StateType::Login);
 }
 
 StateManager::~StateManager(){
