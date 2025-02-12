@@ -6,12 +6,15 @@ State_Login::State_Login(StateManager* l_stateMgr) : BaseState(l_stateMgr), m_cl
 State_Login::~State_Login() {}
 
 void State_Login::OnCreate() {
-    m_client->SetPlayerName("player");
+    m_client->SetPlayerName("login");
     m_client->Setup(&State_Login::HandlePacket, this);
     if (m_client->Connect()) {
         EventManager* evMgr = m_stateMgr->GetContext()->m_eventManager;
         GUI_Manager* guiMgr = m_stateMgr->GetContext()->m_guiManager;
         guiMgr->LoadInterface(StateType::Login, "Login.interface", "Login");
+        GUI_Interface* menu = guiMgr->GetInterface(StateType::Login, "Login");
+        menu->SetPosition(sf::Vector2f(m_stateMgr->GetContext()->m_wind->GetWindowSize().x / 3.2f, 
+            m_stateMgr->GetContext()->m_wind->GetWindowSize().y / 3.5f));
         evMgr->AddCallback(StateType::Login, "Login_proceed", &State_Login::Proceed, this);
     } else {
         std::cout << "Failed to connect to the game server.\n";
@@ -45,7 +48,8 @@ void State_Login::Proceed(EventDetails* l_details) {
     std::string username = menu->GetElement("Nickname")->GetText();
     std::string userpwd = menu->GetElement("Password")->GetText();
     std::string useremail = menu->GetElement("Email")->GetText();
-    std::string str = "SELECT * FROM client WHERE nickname = " + username + " AND pwd = " + userpwd + " AND email = " + useremail;
+    std::string str = "SELECT * FROM client WHERE (nickname = '" + username + "' AND pwd = '" + userpwd + "' AND email = '" + useremail + "')";
+    std::cout << str << std::endl;
     sf::Packet packet;
     StampPacket(PacketType::Login, packet);
     packet << str;
@@ -58,7 +62,9 @@ void State_Login::Deactivate() {}
 
 void State_Login::HandlePacket(const PacketID& l_pid, sf::Packet& l_packet, Client* l_client) {
     PacketType pType = (PacketType)l_pid;
-    if (pType == PacketType::Login) {
+    if (pType == PacketType::Connect) {
+        std::cout << "connect" << std::endl;
+    } else if (pType == PacketType::Login) {
         std::cout << "Logged in successfully!\n";
         std::string cid;
         std::string nickname;

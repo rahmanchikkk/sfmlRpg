@@ -67,7 +67,7 @@ void World::HandlePacket(sf::IpAddress& l_ip, const PortNumber& l_port,
 		} else if (type == PacketType::Login) {
 			std::string str;
 			if (!(l_packet >> str)) return;
-			ClientID cid = l_server->AddClient(l_ip, l_port);
+			ClientID cid = l_server->GetClientID(l_ip, l_port);
 			if (cid == -1) {
 				sf::Packet packet;
 				StampPacket(PacketType::Disconnect, packet);
@@ -83,16 +83,18 @@ void World::HandlePacket(sf::IpAddress& l_ip, const PortNumber& l_port,
 				PQclear(result);
 				return;
 			}
+			int rows = PQntuples(result);
+			if (!rows) return;
 			int cols = PQnfields(result);
 			ClientData data;
 			sf::Packet packet;
 			StampPacket(PacketType::Login, packet);
-			data.m_id = PQgetvalue(result, 0, 0);
-			data.m_nickname = PQgetvalue(result, 0, 1);
-			data.m_password = PQgetvalue(result, 0, 2);
-			data.m_email = PQgetvalue(result, 0, 3);
-			data.m_gold = std::stoi(PQgetvalue(result, 0, 4));
-			std::cout << PQgetvalue(result, 0, 5) << std::endl;
+			data.m_id = std::string(PQgetvalue(result, 0, 0));
+			data.m_nickname = std::string(PQgetvalue(result, 0, 1));
+			data.m_password = std::string(PQgetvalue(result, 0, 2));
+			data.m_email = std::string(PQgetvalue(result, 0, 3));
+			// data.m_gold = std::stoi(std::string(PQgetvalue(result, 0, 4)));
+			std::cout << std::string(PQgetvalue(result, 0, 5)) << std::endl;
 			packet << data;
 			l_server->Send(cid, packet);
 		} else if (type == PacketType::Message){
@@ -109,6 +111,14 @@ void World::HandlePacket(sf::IpAddress& l_ip, const PortNumber& l_port,
 			sf::Packet packet;
 			StampPacket(PacketType::Disconnect, packet);
 			l_server->Send(l_ip, l_port, packet);
+			return;
+		}
+		if (nickname == "login") {
+			sf::Packet packet;
+			StampPacket(PacketType::Connect, packet);
+			if (!l_server->Send(cid, packet)) {
+				std::cout << "Unable to respond to connect packet!" << std::endl;
+			}
 			return;
 		}
 		sf::Lock lock(m_server.GetMutex());
