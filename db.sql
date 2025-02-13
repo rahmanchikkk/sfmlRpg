@@ -1,7 +1,7 @@
 create table skin (
     skin_id BIGSERIAL NOT NULL PRIMARY KEY,
     skin VARCHAR(50) NOT NULL,
-    price NUMERIC(10, 2) CHECK (price > 0)
+    price BIGINT CHECK (price > 0)
 );
 
 create table client (
@@ -9,7 +9,7 @@ create table client (
     nickname VARCHAR(50) NOT NULL,
     email VARCHAR(50) NOT NULL, 
     pwd VARCHAR(50) NOT NULL,
-    gold NUMERIC(20, 2) NOT NULL,
+    gold BIGINT NOT NULL,
     skins integer[],
     UNIQUE(email),
     UNIQUE(nickname)
@@ -29,4 +29,4 @@ create table game (
     players UUID[]
 );
 
-insert into skin (skin, price) values ('pes patron', '999.99');
+insert into skin (skin, price) values ('pes patron', '999');

@@ -66,21 +66,20 @@ void State_Login::HandlePacket(const PacketID& l_pid, sf::Packet& l_packet, Clie
         std::cout << "connect" << std::endl;
     } else if (pType == PacketType::Login) {
         std::cout << "Logged in successfully!\n";
-        std::string cid;
-        std::string nickname;
-        std::string password;
-        std::string email;
-        float gold;
-        std::vector<int> skins;
-        if (!(l_packet >> cid) || !(l_packet >> nickname) || !(l_packet >> password) ||
-            !(l_packet >> email) || !(l_packet >> gold)) {
-            return;
+        ClientData data;
+        l_packet >> data;
+        std::cout << "ID: " << data.m_id << "\n";
+        std::cout << "Nickname: " << data.m_nickname << "\n";
+        std::cout << "Password: " << data.m_password << "\n";
+        std::cout << "Email: " << data.m_email << "\n";
+        std::cout << "Gold: " << data.m_gold << "\n";
+        std::cout << "Skins: ";
+        for (int& i : data.m_skins) {
+            std::cout << i << ' ';
         }
-        std::cout << "ID: " << cid << "\n";
-        std::cout << "Nickname: " << nickname << "\n";
-        std::cout << "Password: " << password << "\n";
-        std::cout << "Email: " << email << "\n";
-        std::cout << "Gold: " << gold << "\n";
+        std::cout << "\n";
+        m_stateMgr->GetContext()->m_clientData = data;
+        m_stateMgr->SwitchTo(StateType::MainMenu);
     } else if (pType == PacketType::Disconnect) {
         std::cout << "Failed to log in!\n";
     }

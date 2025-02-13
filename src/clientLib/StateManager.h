@@ -4,7 +4,7 @@
 #include <vector>
 #include <unordered_map>
 
-enum class StateType{ Intro = 1, MainMenu, Game, Paused, GameOver, Credits, Login };
+enum class StateType{ Intro = 1, MainMenu, Game, Paused, GameOver, Credits, Login, Register };
 // State container.
 using StateContainer = std::vector<std::pair<StateType,BaseState*>>;
 // Type container.

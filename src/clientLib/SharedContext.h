@@ -10,6 +10,7 @@
 #include "Client_Entity_Manager.h"
 #include "Client.h"
 #include "DebugOverlay.h"
+#include "ClientData.h"
 
 class Map;
 
@@ -25,7 +26,7 @@ struct SharedContext{
 		m_systemManager(nullptr),
 		m_entityManager(nullptr),
 		m_gameMap(nullptr),
-		m_guiManager(nullptr){}
+		m_guiManager(nullptr) {}
 
 	Window* m_wind;
 	Client* m_client;
@@ -38,5 +39,6 @@ struct SharedContext{
 	ClientEntityManager* m_entityManager;
 	Map* m_gameMap;
 	GUI_Manager* m_guiManager;
+	ClientData m_clientData;
 	DebugOverlay m_debugOverlay;
 };

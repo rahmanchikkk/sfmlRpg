@@ -140,6 +140,8 @@ ADD_LIBRARY(ClientLib STATIC
     src/clientLib/Game.cpp
     src/clientLib/State_Login.h
     src/clientLib/State_Login.cpp
+    src/clientLib/State_Register.h
+    src/clientLib/State_Register.cpp
 )
 ADD_LIBRARY(ServerLib STATIC 
     src/serverLib/Server.h

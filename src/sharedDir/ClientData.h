@@ -6,7 +6,7 @@ struct ClientData {
     std::string m_nickname;
     std::string m_email;
     std::string m_password;
-    float m_gold;
+    unsigned int m_gold;
     std::vector<int> m_skins;
 };
 

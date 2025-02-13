@@ -93,10 +93,44 @@ void World::HandlePacket(sf::IpAddress& l_ip, const PortNumber& l_port,
 			data.m_nickname = std::string(PQgetvalue(result, 0, 1));
 			data.m_password = std::string(PQgetvalue(result, 0, 2));
 			data.m_email = std::string(PQgetvalue(result, 0, 3));
-			// data.m_gold = std::stoi(std::string(PQgetvalue(result, 0, 4)));
-			std::cout << std::string(PQgetvalue(result, 0, 5)) << std::endl;
+			std::cout << std::string(PQgetvalue(result, 0, 4)) << "\n";
+			data.m_gold = std::stoi(std::string(PQgetvalue(result, 0, 4)));
+			std::stringstream keystream(std::string(PQgetvalue(result, 0, 5)));
+			std::vector<int> skins;
+			char delimeter = ',';
+			std::string line;
+			keystream >> line;
+			line = line.substr(1, line.length() - 2);
+			while (line.find(delimeter) != std::string::npos) {
+				auto delim = line.find(delimeter);
+				if (delim == std::string::npos) break;
+				int num = std::stoi(line.substr(0, delim));
+				skins.emplace_back(num);
+				line = line.substr(delim + 1);
+			}	
+			skins.emplace_back(std::stoi(line));
+			data.m_skins = skins;
 			packet << data;
 			l_server->Send(cid, packet);
+		} else if (type == PacketType::Register) {
+			std::string str;
+			if (!(l_packet >> str)) return;
+			ClientID cid = l_server->GetClientID(l_ip, l_port);
+			if (cid == -1) {
+				sf::Packet packet;
+				StampPacket(PacketType::Disconnect, packet);
+				l_server->Send(cid, packet);
+				return;
+			}
+			const char* query = str.c_str();
+			PGresult* result = PQexec(m_conn, query);
+			ExecStatusType status = PQresultStatus(result);
+			std::cout << "Register query status: " << status << "\n";
+			if (status != PGRES_TUPLES_OK) {
+				std::cout << "Error while executing query: " << PQerrorMessage(m_conn) << "\n";
+				PQclear(result);
+				return;
+			}
 		} else if (type == PacketType::Message){
 			// ...
 		} else if (type == PacketType::PlayerUpdate){
@@ -113,7 +147,7 @@ void World::HandlePacket(sf::IpAddress& l_ip, const PortNumber& l_port,
 			l_server->Send(l_ip, l_port, packet);
 			return;
 		}
-		if (nickname == "login") {
+		if (nickname == "login" || nickname == "register") {
 			sf::Packet packet;
 			StampPacket(PacketType::Connect, packet);
 			if (!l_server->Send(cid, packet)) {
